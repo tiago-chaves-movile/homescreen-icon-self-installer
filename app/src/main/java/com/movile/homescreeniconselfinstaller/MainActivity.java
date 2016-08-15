@@ -1,23 +1,19 @@
 package com.movile.homescreeniconselfinstaller;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = MainActivity.class.getSimpleName();
-
-    private SharedPreferences appPreferences;
-
-    private boolean isBrowserRedirect = false;
-    private boolean clickedBrowserRedirect = false;
+    private static final String EXTRA_DUPLICATE = "duplicate";
+    private static final String REDIRECT_URL = "http://www.google.com";
+    private static final String CLICKED_BROWSER_REDIRECT = "clickedBrowserRedirect";
+    private static final String INSTALL_SHORTCUT_ACTION = "com.android.launcher.action.INSTALL_SHORTCUT";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,24 +22,7 @@ public class MainActivity extends AppCompatActivity {
 
         getExtras(getIntent() == null ? null : getIntent().getExtras());
 
-        setButtonClick((Button) findViewById(R.id.bAdd_Shortcut));
-    }
-
-    private void getExtras(@Nullable Bundle extras) {
-        if (extras != null) {
-            Log.d(TAG, "savedInstanceState is not null");
-            if (extras.containsKey("clickedBrowserRedirect")) {
-                Log.d(TAG, "savedInstanceState contains 'clickedBrowserRedirect' key");
-//                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com"));
-//                startActivity(browserIntent);
-            } else {
-                Log.d(TAG, "savedInstanceState does not contain 'clickedBrowserRedirect' key");
-                boolean test = extras.getBoolean("clickedBrowserRedirect", false);
-                Log.d(TAG, "test: " + String.valueOf(test));
-            }
-        } else {
-            Log.d(TAG, "savedInstanceState is null");
-        }
+        setButtonClick((Button) findViewById(R.id.add_shortcut_button));
     }
 
     private void setButtonClick(Button addButton) {
@@ -55,29 +34,35 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void addShortcutIcon() {
-        Bundle extras = new Bundle();
-        extras.putBoolean("clickedBrowserRedirect", true);
-
-        Intent shortcutIntent = new Intent(getApplicationContext(), MainActivity.class);
-        shortcutIntent.setAction(Intent.ACTION_MAIN);
-        shortcutIntent.putExtra("clickedBrowserRedirect", true);
-        shortcutIntent.putExtras(extras);
-
-        createHomescreenicon(shortcutIntent);
+    private void getExtras(@Nullable Bundle extras) {
+        if (extras != null && extras.containsKey(CLICKED_BROWSER_REDIRECT)) {
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(REDIRECT_URL));
+            startActivity(browserIntent);
+        }
     }
 
-    private void createHomescreenicon(Intent shortcutIntent) {
+    private void addShortcutIcon() {
+        Intent shortcutIntent = new Intent(getApplicationContext(), MainActivity.class);
+        shortcutIntent.setAction(Intent.ACTION_MAIN);
+
+        Bundle extras = new Bundle();
+        extras.putBoolean(CLICKED_BROWSER_REDIRECT, true);
+        shortcutIntent.putExtras(extras);
+        shortcutIntent.putExtra(CLICKED_BROWSER_REDIRECT, true);
+
+        createHomescreenIcon(shortcutIntent);
+    }
+
+    private void createHomescreenIcon(Intent shortcutIntent) {
         Intent addIntent = new Intent();
         addIntent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
-        addIntent.putExtra(Intent.EXTRA_SHORTCUT_NAME, "ShortcutName");
-        addIntent.putExtra("duplicate", false);
-        addIntent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE,
-                Intent.ShortcutIconResource
-                        .fromContext(getApplicationContext(), R.mipmap.ic_launcher));
-        addIntent.putExtra("clickedBrowserRedirect", true);
+        addIntent.putExtra(Intent.EXTRA_SHORTCUT_NAME, "Google");
+        addIntent.putExtra(Intent.EXTRA_SHORTCUT_ICON_RESOURCE, Intent.ShortcutIconResource.fromContext(getApplicationContext(), R.mipmap.ic_launcher));
+        addIntent.putExtra(EXTRA_DUPLICATE, false);
+        addIntent.putExtra(CLICKED_BROWSER_REDIRECT, true);
 
-        addIntent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
+        addIntent.setAction(INSTALL_SHORTCUT_ACTION);
+
         getApplicationContext().sendBroadcast(addIntent);
     }
 

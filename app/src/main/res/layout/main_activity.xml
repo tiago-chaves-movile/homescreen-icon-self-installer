@@ -1,11 +1,15 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+
+    android:gravity="center"
     android:orientation="vertical">
 
     <Button
-        android:id="@+id/bAdd_Shortcut"
-        android:layout_width="fill_parent"
+        android:id="@+id/add_shortcut_button"
+        android:layout_width="240dp"
         android:layout_height="wrap_content"
-        android:text="Add Shortcut" />
+        android:padding="16dp"
+        android:text="Add Shortcut"
+        android:textSize="24dp" />
 </LinearLayout>
