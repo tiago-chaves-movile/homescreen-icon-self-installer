@@ -1,12 +1,10 @@
 package com.movile.homescreeniconselfinstaller;
 
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -16,56 +14,60 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    Context mContext = MainActivity.this;
-    SharedPreferences appPreferences;
-    boolean isBrowserRedirect = false;
-    boolean clickedBrowserRedirect = false;
+    private SharedPreferences appPreferences;
+
+    private boolean isBrowserRedirect = false;
+    private boolean clickedBrowserRedirect = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
 
-        if (savedInstanceState != null) {
-            Log.d(TAG, "savedInstanceState is not null: " + savedInstanceState.toString());
-            if (savedInstanceState.containsKey("clickedBrowserRedirect")) {
+        getExtras(getIntent() == null ? null : getIntent().getExtras());
+
+        setButtonClick((Button) findViewById(R.id.bAdd_Shortcut));
+    }
+
+    private void getExtras(@Nullable Bundle extras) {
+        if (extras != null) {
+            Log.d(TAG, "savedInstanceState is not null");
+            if (extras.containsKey("clickedBrowserRedirect")) {
                 Log.d(TAG, "savedInstanceState contains 'clickedBrowserRedirect' key");
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com"));
-                startActivity(browserIntent);
+//                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com"));
+//                startActivity(browserIntent);
             } else {
                 Log.d(TAG, "savedInstanceState does not contain 'clickedBrowserRedirect' key");
+                boolean test = extras.getBoolean("clickedBrowserRedirect", false);
+                Log.d(TAG, "test: " + String.valueOf(test));
             }
         } else {
             Log.d(TAG, "savedInstanceState is null");
         }
+    }
 
-        Button add = (Button) findViewById(R.id.bAdd_Shortcut);
-        add.setOnClickListener(new View.OnClickListener() {
+    private void setButtonClick(Button addButton) {
+        addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 addShortcutIcon();
             }
         });
-
-//        appPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-//        isBrowserRedirect = appPreferences.getBoolean("isBrowserRedirect", false);
-//        if (isBrowserRedirect) {
-//            Log.d(TAG, "appPreferences contains 'isBrowserRedirect' key");
-//            SharedPreferences.Editor editor = appPreferences.edit();
-//            editor.putBoolean("isBrowserRedirect", false);
-//            editor.apply();
-//            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com"));
-//            startActivity(browserIntent);
-//        }
     }
 
     private void addShortcutIcon() {
-        Intent shortcutIntent = new Intent(this, MainActivity.class);
-//        shortcutIntent.setComponent(new ComponentName(
-//                getApplicationContext(), BrowserRedirectActivity.class));
+        Bundle extras = new Bundle();
+        extras.putBoolean("clickedBrowserRedirect", true);
+
+        Intent shortcutIntent = new Intent(getApplicationContext(), MainActivity.class);
         shortcutIntent.setAction(Intent.ACTION_MAIN);
         shortcutIntent.putExtra("clickedBrowserRedirect", true);
+        shortcutIntent.putExtras(extras);
 
+        createHomescreenicon(shortcutIntent);
+    }
+
+    private void createHomescreenicon(Intent shortcutIntent) {
         Intent addIntent = new Intent();
         addIntent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
         addIntent.putExtra(Intent.EXTRA_SHORTCUT_NAME, "ShortcutName");
@@ -77,9 +79,6 @@ public class MainActivity extends AppCompatActivity {
 
         addIntent.setAction("com.android.launcher.action.INSTALL_SHORTCUT");
         getApplicationContext().sendBroadcast(addIntent);
-//        SharedPreferences.Editor editor = appPreferences.edit();
-//        editor.putBoolean("isBrowserRedirect", true);
-//        editor.apply();
     }
 
 }
